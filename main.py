@@ -5,12 +5,13 @@
 # the same bytes go in, the same bytes come out, every run.
 #
 # The image is a one-page newspaper front page summing up Friday
-# 20 November 2026: the Trump–Xi–Putin "peace declaration" from
-# Shenzhen, COP31 closing in Antalya without a fossil-fuel deal,
-# four Russian missiles hitting Kyiv, a Houthi strike on Riyadh's
-# tallest tower, Meta rethinking its 2030 net-zero target, and the
-# first US deep-sea mining leases. It was drawn in code (see
-# generate.py) and committed here as entry.png.
+# 20 November 2026 in 36 stories: a headline stat strip, 13 drawn
+# feature stories with per-story sources, 23 more briefs, a world
+# map with numbered pins, and a DATE CHECK box that names the big
+# Thursday 19 Nov stories (Shenzhen summit, Anthropic IPO pricing,
+# ICJ Myanmar verdict, GTA VI launch, Riyadh tower attack, COP31's
+# second draft) and keeps them out of the Friday paper. It was drawn
+# in code (see generate.py) and committed here as entry.png.
 
 import os
 import shutil
