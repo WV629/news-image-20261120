@@ -105,6 +105,28 @@ def flag_ru(d, x, y, w=34, h=22):
     d.rectangle([x, y + 2 * h // 3, x + w, y + h], fill=(200, 40, 40))
 
 
+def birds(d, x0, y0, x1, y1, seed, count=5):
+    """Small gull strokes scattered across a sky box."""
+    rnd = random.Random(seed)
+    for _ in range(count):
+        bx = rnd.randint(x0 + 12, x1 - 24)
+        by = rnd.randint(y0 + 8, y0 + (y1 - y0) // 3)
+        s = rnd.randint(5, 9)
+        d.arc([bx - s, by - s // 2, bx, by + s // 2], 200, 340, fill=INK)
+        d.arc([bx, by - s // 2, bx + s, by + s // 2], 200, 340, fill=INK)
+
+
+def starfield(d, x0, y0, x1, y1, seed, count=22, top_frac=0.45):
+    """Tiny stars across the upper part of a night box."""
+    rnd = random.Random(seed)
+    for _ in range(count):
+        sx = rnd.randint(x0 + 6, x1 - 6)
+        sy = rnd.randint(y0 + 6, y0 + int((y1 - y0) * top_frac))
+        d.point((sx, sy), fill=(225, 225, 205))
+        if rnd.random() < 0.3:
+            d.point((sx + 1, sy), fill=(225, 225, 205))
+
+
 def skyline(d, x0, y0, x1, y1, seed, fill, lit=True):
     """Randomised tower blocks along the bottom of an art box."""
     rnd = random.Random(seed)
@@ -128,7 +150,12 @@ def draw_shenzhen(d, x0, y0, x1, y1):
     """Shenzhen at dusk: sky, low sun, towers, three flags above."""
     d.rectangle([x0, y0, x1, y1], fill=SKY)
     d.ellipse([x1 - 78, y0 + 14, x1 - 34, y0 + 58], fill=(250, 214, 130))
+    birds(d, x0, y0, x1, y1, 2026, count=6)
     skyline(d, x0, y0, x1, y1, 1911, NAVY_LT)
+    # river reflections: short gold dashes on the green strip
+    for rx in range(x0 + 14, x1 - 14, 26):
+        d.line([(rx, y1 - 14), (rx + 12, y1 - 14)], fill=(250, 214, 130),
+               width=2)
     for i, fl in enumerate((flag_us, flag_cn, flag_ru)):
         fx = x0 + 26 + i * 62
         d.line([(fx + 17, y0 + 12), (fx + 17, y0 + 62)], fill=INK, width=3)
@@ -146,12 +173,20 @@ def draw_antalya(d, x0, y0, x1, y1):
         b = int(130 + (170 - 130) * t)
         d.line([(x0, y0 + i), (x1, y0 + i)], fill=(r, g, b))
     d.ellipse([x0 + 18, y0 + 10, x0 + 66, y0 + 58], fill=(255, 236, 160))
+    birds(d, x0, y0, x1, y1, 1120, count=4)
     horizon = y0 + (y1 - y0) * 3 // 5
     d.rectangle([x0, horizon, x1, y1], fill=(32, 130, 140))
     for i in range(4):
         wy = horizon + 14 + i * 12
         d.line([(x0 + 10 + i * 18, wy), (x1 - 10 - i * 14, wy)],
                fill=(120, 200, 205), width=2)
+    # a little sailboat crossing the bay
+    bx = x0 + (x1 - x0) // 2
+    by = horizon + 8
+    d.polygon([(bx, by), (bx, by - 18), (bx + 14, by)], fill=(255, 255, 255))
+    d.polygon([(bx - 2, by), (bx - 2, by - 12), (bx - 12, by)],
+              fill=(240, 240, 235))
+    d.rectangle([bx - 14, by, bx + 16, by + 4], fill=(178, 38, 38))
     # white resort blocks on the shore
     rnd = random.Random(311)
     cx = x0 + 10
@@ -172,12 +207,13 @@ def draw_kyiv(d, x0, y0, x1, y1):
     """Kyiv by night: dark sky, lit towers, four missile trails
     arcing down with bright heads, one burst over the rooftops."""
     d.rectangle([x0, y0, x1, y1], fill=(12, 18, 38))
-    rnd = random.Random(420)
-    for _ in range(26):
-        sx = rnd.randint(x0 + 6, x1 - 6)
-        sy = rnd.randint(y0 + 6, y0 + 60)
-        d.point((sx, sy), fill=(220, 220, 200))
+    starfield(d, x0, y0, x1, y1, 1120, count=26)
     skyline(d, x0, y0, x1, y1, 77, (30, 38, 60))
+    # two searchlight beams sweeping up from the rooftops
+    for sx, lean in ((x0 + 70, -30), (x1 - 90, 26)):
+        d.polygon([(sx, y1 - 24), (sx + 8, y1 - 24),
+                   (sx + lean + 26, y0 + 10), (sx + lean + 10, y0 + 10)],
+                  fill=(255, 240, 180))
     # missile trails: four arcs from the top edge
     for i, mx in enumerate((x0 + 52, x0 + 130, x0 + 210, x0 + 288)):
         top = y0 + 8 + i * 6
@@ -207,6 +243,15 @@ def draw_riyadh(d, x0, y0, x1, y1):
         g = int(170 + (60 - 170) * t)
         b = int(120 + (110 - 120) * t)
         d.line([(x0, y0 + i), (x1, y0 + i)], fill=(r, g, b))
+    # crescent moon low over the desert city: a pale disc with a
+    # bite taken out of it in the local sky colour
+    mx, my = x1 - 52, y0 + 26
+    mt = (my - y0) / max(1, (y1 - y0))
+    sky_here = (int(232 + (40 - 232) * mt), int(170 + (60 - 170) * mt),
+                int(120 + (110 - 120) * mt))
+    d.ellipse([mx - 14, my - 14, mx + 14, my + 14], fill=(250, 240, 200))
+    d.ellipse([mx - 8, my - 16, mx + 16, my + 12], fill=sky_here)
+    starfield(d, x0, y0, x1, y1, 777, count=10, top_frac=0.3)
     cx = (x0 + x1) // 2
     base = y1 - 22
     # low city blocks first, so the tower stands in front of them
@@ -249,6 +294,12 @@ def draw_datacentre(d, x0, y0, x1, y1):
     d.polygon([(bx + 6, bt), (bx - 9, bt + 22), (bx - 1, bt + 22),
                (bx - 6, bt + 42), (bx + 11, bt + 18), (bx + 2, bt + 18)],
               fill=(250, 214, 80))
+    # cable trays running along the floor between the racks
+    for cx0 in range(x0 + 12, x1 - 12, 40):
+        d.line([(cx0, bot - 2), (cx0 + 18, bot - 2)], fill=(90, 110, 130),
+               width=2)
+        d.line([(cx0 + 9, bot - 2), (cx0 + 9, bot - 8)], fill=(90, 110, 130),
+               width=2)
 
 
 def draw_seabed(d, x0, y0, x1, y1):
@@ -283,6 +334,16 @@ def draw_seabed(d, x0, y0, x1, y1):
                        (cx + 90, sea + 40, 5), (cx + 120, sea + 70, 3)):
         d.ellipse([bx - br, by - br, bx + br, by + br],
                   outline=(180, 220, 235), width=2)
+    # small fish silhouettes drifting through the water column
+    rnd = random.Random(2026)
+    for _ in range(6):
+        fx = rnd.randint(x0 + 16, x1 - 40)
+        fy = rnd.randint(sea + 10, y1 - 32)
+        fl = rnd.randint(10, 18)
+        d.polygon([(fx, fy), (fx + fl, fy - 4), (fx + fl, fy + 4)],
+                  fill=(140, 170, 190))
+        d.polygon([(fx + fl, fy - 4), (fx + fl + 6, fy),
+                   (fx + fl, fy + 4)], fill=(140, 170, 190))
 
 
 def story(d, x0, y0, x1, y1, art, kick, head, deck, head_size=27):
